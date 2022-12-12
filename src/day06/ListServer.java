@@ -1,63 +1,40 @@
 package day06;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.*;
+
+import static day06.IOUtil.*;
 
 public class ListServer {
     public static void main(String[] args) throws Exception {
-        System.out.println("LIST SERVER INITIALISED");
-
+        
         // create list server port number 8080
-        // Integer port = Integer.parseInt(args[0]);
-        Integer port = 8080;
+        // Integer port = Integer.parseInt(args[0]); 
+        Integer port = 8080; // added port number for convenient connection
 
-        // creates a SERVER socket and bind to port
-        // (Server is listening on port for requests)
-        ServerSocket server = new ServerSocket(port);
+        // creates a SERVER socket (passive connection)
+        ServerSocket serverSocket = new ServerSocket(port);
         System.out.printf("Server listening on port %d\n", port);
         
-
-        // accepts request from client, establish connection w client
-        Socket clientSocket = server.accept();
+        // establish client Connection with server
+        Socket clientSocket = serverSocket.accept(); // accept - passive connection from server
         System.out.printf("New connection on port %s\n", clientSocket.getLocalPort());
         
-        // input stream (Receiving data)
-        InputStream is = clientSocket.getInputStream(); //
-        BufferedInputStream bis = new BufferedInputStream(is); // make the process more efficient
-        DataInputStream dis = new DataInputStream(bis);
-        
-        String messageIn = dis.readUTF(); // read input
+        // establish input stream and read data
+        String inputData = IOUtil.read(clientSocket);
         
         // converting message to array
-        String[] inputParameters = messageIn.trim().split(" ");
+        String[] inputParameters = inputData.trim().split(" ");
 
         // generate array of random numbers
         String listOut = generateRandoms(inputParameters);
-
-        // setup output stream (Sending data)
-        OutputStream os = clientSocket.getOutputStream();
-        BufferedOutputStream bos = new BufferedOutputStream(os);
-        DataOutputStream dos = new DataOutputStream(bos);
-
         System.out.printf("Sending string over: %s\n", listOut);
 
-        dos.writeUTF(listOut);
-        dos.flush(); // what does flush do?
+        // setup output stream (Sending data)
+        IOUtil.write(clientSocket, listOut);
 
-        // os.close();
-        // bos.close();
-        dos.close();
-        dis.close();
+
+        serverSocket.close();
         clientSocket.close();
         
     }
